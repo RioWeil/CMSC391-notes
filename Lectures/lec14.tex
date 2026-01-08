@@ -1,0 +1,74 @@
+\section{Student Talk: The Complexity = Volume conjecture}
+
+\subsection{Introducing the Conjecture}
+The AdS/CFT conjecture states that we can map a $d$-dimensional anti-de-Sitter spacetime to a $d-1$ conformal field theory on the boundary. For the purposes of this lecture, it is the statement that:
+\begin{equation}
+    \set{\text{black hole}} \cong \set{\text{thermal state}}
+\end{equation}
+
+Let us take $\mathcal{H}_a \cong \mathcal{H}_B \cong \CC^N$, and consider the computational basis state $\set{\ket{i}}_i$. The thermal double state of the black hole is the maximally entangled state:
+\begin{equation}
+    \ket{\Phi} = \frac{1}{\sqrt{N}}\sum_i \ket{i}_A \otimes \ket{i}_B
+\end{equation}
+
+We recall the bounceback property of maximally entangled states:
+\begin{equation}
+    \frac{1}{\sqrt{N}}\sum_i V\ket{i}_A \otimes \ket{i}_B = \frac{1}{\sqrt{N}}\sum_i \ket{i}_A \otimes V^*\ket{i}_B
+\end{equation}
+Therefore:
+\begin{equation}
+    \frac{1}{\sqrt{N}}\sum_i V[\ket{i}_A \otimes \ket{i}_B] = \frac{1}{\sqrt{N}}\sum_i \ket{i}_A \otimes U\ket{i}_B
+\end{equation}
+with $U = (V^*)^2$, thus the black hole evolves unitarily and is efficiently implementable.
+
+Let us return to thermal properties of the black hole. Consider local unitaries $O_A$ on $\mathcal{H}_A$ and Heisenberg evolved $U(t)O_BU^*(t)$ on $\mathcal{H}_B$. Then:
+\begin{equation}
+    \bra{\psi_t}O_A \otimes U(t)O_BU^*(t)\ket{\psi_t} = \bra{O_A^*, U(t)O_BU^*(t)}_{\text{HS}}
+\end{equation}
+The Hilbert-Schmidt norm is only zero if the two operators have disjoint support. If we let $U(t) = e^{-iH_{\text{CFT}}t}$. Since $H_{\text{CFT}}$ is scrambling, then by time $t \approx t_{\text{scr}} \sim \frac{\beta}{2\pi}\log N$:
+\begin{equation}
+    \avg{O_A^*, UO_BU^*}_{\text{HS}} \to 0
+\end{equation}
+exponentially quickly. This is because $O_B$ delocalizes via the scrambling.
+
+Now, we introduce the complexity = volume conjecture. The volume of the black hole is approximately linearly increasing. If thermalization happens in the CTT, what is the CFT dual of the volume? 
+
+The conjecture is that the CFT dual of the black hole volume is the quantum circuit complexity of $\ket{\psi_t}, \mathcal{C}_\e(\ket{\psi_t})$. In other words:
+\begin{equation}
+    \mathcal{C}_\e(\ket{\psi_t}) \approx cV(\ket{\Phi_t})
+\end{equation}
+where $\mathcal{C}_\e$ is the circuit complexity (in terms of gate count starting from a product state) of preparing $\ket{\psi_t}$, up to error epsilon $\e$ (so the complexity is not necessarily coming from the fact that exact states may be hard to prepare).
+
+\subsection{Constraints on AdS/CFT}
+First, let us define the notion of \emph{pseudorandomness}. The ensemble $\set{\ket{\psi_k}}_k$ is pseudorandom if no polynomial time quantum computation can differentiate between $\ket{\psi_k}$ and a Haar random state $\ket{\phi}$.  Note that this implies that $\delta(\ket{\psi_k}, \ket{\phi}) < \e$ in statistical distance.
+
+We begin with a state $\ket{\psi}$, and alternately apply a unitary $U$ adn a random Pauli for $l$ rounds. We then have:
+\begin{equation}
+    \ket{\Psi_k} = k_l U k_{l-1} U \ldots k_1 U\ket{\psi}, k_j \in \set{I, X, Y, Z}
+\end{equation}
+then $\ket{\Psi_k} \in D_{U, l,\ket{\phi}}$.
+
+Now, we assume:
+\begin{itemize}
+    \item $\ket{\psi_k}$ is pseudorandom with $U = e^{-iH_{\text{CFT}}mt_{\text{scr}}}$
+    \item We assume that while black holes aren't measurable, they can be at least approximated.
+\end{itemize}
+
+Why do we need the ``keys'' in this construction? If we have the ability to apply $U^*$, then $U\ket{0^n}$ and $\ket{\phi}$ Haar random can be easily distinguished by applying $U^*$ and then measuring in the computational basis.
+
+Consider two pseudorandom states $\ket{\psi}, \ket{\psi'}$ on volumes $O(N^2), O(N^3)$ (different evolution times for different $k, k'$ so different wormhole volumes). Let $\Theta$ is the dictionary map $\ket{\Phi} \stackrel{\Theta}{\to}\ket{\psi}$. Because the volumes are distinct enough, we can measure their difference in polynomial time.
+
+Seeming violation of quantum extended church-turing thesis (every efficiently solvable problem can be simulated on a quantum computer) - $\ket{\psi}, \ket{\psi'}$ can be distinguished in poly time in ADS, but a QC in by assumption cannot distinguish the two CFT states (because if both are individually indistinguishable from Haar random states, then they are mutually indistinguishable)!
+
+So either:
+\begin{itemize}
+    \item The AdS/CFT correspondence dictionary is exponentially complicated - this may mean that it is not a useful duality...
+    \item Or, quantum gravity is able to solve a problem that is exponentially hard for a quantum computer! We need to adapt the extended church turing thesis for quantum gravity.
+\end{itemize}
+
+Formally for the first point: the quantum extended church turing thesis does hold, then we must restrict the dictionary map $\Theta$ - if $t(N)$ is the time it takes to ``feel'' the black hole, then:
+\begin{equation}
+    \mathcal{C}_\e(\Phi)t(N) \geq \exp(N)
+\end{equation}
+
+Remark by Bill: It turns out that the argument doesn't actually require the volume = complexity conjecture! Leonard Susskind's argument isn't quite right.

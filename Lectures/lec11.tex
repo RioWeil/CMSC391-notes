@@ -1,0 +1,47 @@
+\section{Quantum Algorithms IV}
+
+\subsection{Optimality of Grover's Algorithm}
+What this optimality proof shows - if QCs can solve \textbf{NP}-complete problem efficiently, it must use some meaningful structure of a Boolean formula (that would distinguish it from a blackbox). This square root speedup is the best we can do for unstructured search.
+
+Let us show that \emph{any} quantum algorithm must make $\sqrt{N}$ queries. Define $g: \set{0, 1}^n \to \set{0, 1}$ such that $g(z) = 1$ for some $z$ and $0$ otherwise, and $f(x) = 0$ for all $x$.
+
+We give a high-level proof sketch. Consider any quantum algorithm that queries $f$. We show for htis algorithm that there exists a $g$ such that the final state of this same algorithm that queries $g$ is extremely close to the final state querying $f$, unless the number of queries is at least $\sqrt{N}$.
+
+Thus, consider a general quantum algorithm that queries the all-zero function $f$, and it looks like $A = U_TF_TU_{T-1}F_{T-1}\ldots F_1U_1$ (with $F_i$ a query to $f$ which acts as $F_i\ket{x} = (-1)^{f(x)}\ket{x}$ and $U_i$ an $f$-independent unitary) and starts in $\ket{0^n}$.
+
+We don't care about two $F$s in a row because the $F$s are self-inverse and hence we would never apply them twice in a row. We don't care about two $U$s in a row because that just forms another unitary and here we do not care about the gate complexity (in this proof, the $U$s are fully general!)
+
+Let the state of the algorithm on the $t$th query be $\sum_x \alpha_{x, t}\ket{x}$. To define $g$ (i.e. to set the marked string $z$), we'll define the notion of ``query magnitude'' of a string $x$, defined as $\sum_t \abs{\alpha_{x, t}}^2$. Then, the expectation value of the query magnitude over random $x$ is:
+\begin{equation}
+    E_x\left[\sum_t \abs{\alpha_{x, t}}^2\right] = \frac{1}{N}\sum_x \sum_t\abs{\alpha_{x, t}}^2 = \frac{1}{N}\sum_t \sum_x \abs{\alpha_{x, t}}^2 = \frac{1}{N}\sum_t 1 = \frac{T}{N}
+\end{equation}
+Now notice that:
+\begin{equation}
+    \text{min}_x\left(\sum_t \abs{\alpha_{x, t}}^2\right) = \frac{T}{N}
+\end{equation}
+Now let $z$ be the input at which this minimum occurs, then by Cauchy-Shwarz:
+\begin{equation}
+    \sum_t \abs{\alpha_{z, t}} \leq \frac{T}{\sqrt{N}}
+\end{equation}
+We see this as:
+\begin{equation}
+    \left(\sum_t\abs{\alpha_{z, t}} \cdot 1 \right)^2 \leq \braket{\vec{\alpha}_z}{\vec{\alpha_z}}\braket{\vec{1}}{\vec{1}} = T\sum_t \abs{\alpha_{z, t}}^2 \leq T\frac{T}{N} \implies  \sum_t \abs{\alpha_{z, t}} \leq \frac{T}{\sqrt{N}}
+\end{equation}
+Define $g$ to be such that $g(z) = 1$ and otherwise 0.
+
+We shall prove that the end state of the algorithm is close regardless of the oracle being $g$ or $f$. Let the state of the algorithm after the $T$th query to $f$ be called $\ket{\phi_T}$ and the same algorithm with $g$ as the oracle be called $\ket{\psi_T}$. In other words, we will show that $\norm{\ket{\psi_T} - \ket{\phi_T}} \leq \frac{T}{\sqrt{N}}$. Thus measuring the two states gives us $O(\frac{T}{\sqrt{N}})$ -close distributions (in statistical distance/total variation distance), and hence $T = \Omega(\sqrt{N})$ to distinguish the distributions with constant probability.
+
+We will show this bound by doing a ``hybrid'' run of the algorithm wherein the algorithm makes some queries to $f$ and some to $g$ (these do not exist! But is useful as a proof/analysis technique of final runs of all $f$ or all $g$). In these hybrid runs, we consider runs where the queries only differ in one spot (e.g. $fffgggg$ vs. $ffffggg$). These adjacent runs turn out to be easy to bound, because the only difference between the query $f/g$ is the action on $\ket{z}$; this is a very local change. We then apply the bound $N$ times, flipping $f$s to $g$s one at a time, e.g. $ffff\to fffg \to ffgg \to fggg \to gggg$. Now that the intuition is clear, let's go to formalizing this argument.
+
+We claim:
+\begin{equation}
+    \ket{\psi_T} = \ket{\phi_T} + \ket{E_0} + \ket{E_1} + \ldots + \ket{E_{T-1}}
+\end{equation}
+where $\norm{\ket{E_t}} \leq 2\abs{\alpha_{z, t}}$. Notice after this we are done since $\norm{\ket{\psi_T} - \ket{\phi_T}} \leq \sum_t 2\abs{\alpha_{z, t}} \leq O(\frac{T}{\sqrt{N}})$. To prove the claim, consider two runs of algorithm $A$, which only differ on the $t$th-step. The first run queries $f$ on the first $t$ steps and queries $g$ on the remaining $T - t$, vs. the second run queries $f$ on the first $t-1$ steps and $g$ on the remaining $T - t + 1$. 
+
+After the first $t-1$ steps, both runs are in state $\ket{\phi_t}$. But on the $t$th step, one run queries $f$ and the other $g$. So, the output of these queries differ only in a single amplitude, that of $\ket{z}$. So, we can write the states as $\ket{\phi_t}$ and $\ket{\phi_t} + \ket{F_t}$ where $\norm{\ket{F_t}} \leq 2\abs{\alpha_{z, t}}$. 
+
+So, if we let $U$ be the unitary transformation describing the remaining $T - t$ states of the algolrithm, then the ending states of both runs are $U(\ket{\phi_t})$ and $U(\ket{\phi_t} + \ket{F_t}) = U\ket{\phi_t} + \ket{E_t}$ where $\norm{\ket{E_t}} \leq 2\abs{\alpha_{z, t}}$ since unitaries preserve the $\ell_2$ norm.
+
+Now we can transform the run $A_f$ to $A_g$ by a succession of $T$ changes of this sort. Overall, we can think of the final states as $\ket{\phi_T}$ plus a sum of the individual local differences, which gives us the bound.
+

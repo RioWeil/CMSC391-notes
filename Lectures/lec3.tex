@@ -1,0 +1,73 @@
+\section{Models of Computation}
+\subsection{Classical deterministic computation}
+We consider a deterministic classical computer with $m = \text{poly}(n)$ bits of memory. The state of the system is an $m$-bit string, which we may equivalently think of as a $2^m$-dimensional column vector indexed by all possible $m$-bit strings $y \in \set{0, 1}^m$, denoted by $\ket{y}$. The computation proceeds as follows:
+\begin{enumerate}
+    \item Start in the initial state with the memory set to $\ket{x0^{m-n}}$, with $x$ the input.
+    \item Apply $\text{poly}(n)$ number of local gates, which act non-trivially on some constant number of input bits and modify a constant number of output bits. As an example, we can consider the XOR gate on input $(x_1, x_2, \ldots x_m)$ which takes two bits $x_1, x_2$ and outputs $(x_1, x_2, \ldots, x_k = (x_1 \oplus x_2), \ldots, x_m)$.
+    \item The measurement is then simply reading out the unique output string.
+\end{enumerate}
+
+\subsection{Randomized classical computation}
+We can generalize the above computation to a randomized computation to extending the notion of a state to be a probability distribution over $m$-bit strings $\set{0, 1}^m$, or a $2^m$-dimensional column vector of positive real numbers that sum to 1, wherein we label the $2^m$ basis vectors as $\ket{a}, a \in \set{0, 1}^m$. Then the procedure goes as:
+\begin{enumerate}
+    \item Start in the distribution in which the probability mass is on the input $x$ as well as ancillary bits $\ket{x0^{m-n}}$.
+    \item As before, apply $\text{poly}(n)$ local gates - but these are now probabilistic gates. Supposing we have the probabilistic state $\v{v} = \sum_{y \in \set{0, 1}^m}\alpha_y \ket{y}$ with $\sum_y \alpha_y = 1$. We apply a linear map $F: \RR^{2^m} \to \RR^{2^m}$ such that:
+    \begin{itemize}
+        \item If $\v{v}$ is a distribution vector (entries sum to 1) then so is $F(\v{v})$, i.e. $F$ as a $2^m \times 2^m$ is stochastic; it has nonnegative entries where the columns sum to 1.
+        \item $F$ is local, in that it reads and modifies at most 3 bits of the register, leaving the rest untouched. This means it can be described as a $2^3 \times 2^3$ matrix (acts as identity on all other registers).
+    \end{itemize}
+    \item Measurements of the state outputs a sample from the distribution over $\set{0, 1}^m$ based on the state at the end of the circuit.
+\end{enumerate}
+
+Example; suppose we are in the state:
+\begin{equation}
+    \m{1/2 \\ 1/4 \\ 1/4 \\ 0 \\ 0 \\ 0 \\ 0 \\ 0} = \frac{1}{2}\ket{000} + \frac{1}{4}\ket{001} + \frac{1}{4}\ket{010}
+\end{equation}
+and we apply the two-bit CNOT gate:
+\begin{align*}
+    \m{1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 0 & 1 \\ 0 & 0 & 1 & 0}
+\end{align*}
+between the second/third bits. Then:
+\begin{equation}
+    \m{1/2 \\ 1/4 \\ 1/4 \\ 0 \\ 0 \\ 0 \\ 0 \\ 0} \stackrel{\text{CNOT}}{\to} \m{1/2 \\ 1/4 \\ 0 \\ 1/4 \\ 0 \\ 0 \\ 0 \\ 0}
+\end{equation}
+
+\subsection{Quantum Computation}
+The state of a quantum computer with $m$ qubits is an $m$-qubit quantum state $\ket{\psi} \in \CC^{2^m}$.
+\begin{itemize}
+    \item We start our quantum computation in the computationabl basis state $\ket{x0^{m-n}}$.
+    \item We then apply a sequence of quantum gates $G$ that acts on the state.
+    \item We then perform a quantum measurement as a readout step.
+\end{itemize} 
+
+The gates $G$ must be complex unitary matrices, i.e. they preserve $l_2$-norm and map unit vectors to unit vectors - $\norm{G\ket{\psi}} = \norm{\ket{\psi}} = 1$. Equivalently, rows/columns of $G$ are orthonormal. Further equivalently, $U^\dag U = I$ (the conjugate transpose is the inverse). $G$ must also be local, i.e. it acts nontrivially on some constant number of qubits and as identity on the rest, i.e. $G = B \otimes I_{n-3}$ where $B$ is some $2^3 \times 2^3$ unitary.
+
+An example is starting with:
+\begin{equation}
+    \ket{\psi} = \ket{00} = \m{1 \\ 0 \\ 0 \\ 0}
+\end{equation}
+and then applying the 2-qubit Hadamard gate:
+\begin{equation}
+    H^{\otimes 2} = H \otimes H = (\frac{1}{\sqrt{2}}\m{1 & 1 \\ 1 &-1}) \otimes (\frac{1}{\sqrt{2}}\m{1 & 1 \\ 1 &-1}) = \m{1 & 1 & 1 & 1 \\ 1 & -1 & 1 & -1 \\ 1 & 1 & -1 & -1 \\ 1 & -1 & -1 & 1}
+\end{equation}
+where applying $H^{\otimes 2}$ to $\ket{\psi}$ yields the uniform superposition over $n$ qubits:
+\begin{equation}
+    H^{\otimes 2}\ket{\psi} = \frac{1}{2}(\ket{00} + \ket{01} + \ket{10} + \ket{11})
+\end{equation}
+this is the analogue of the uniform distribution and will be the starting point for many quantum algorithms!
+
+\subsection{Quantum Measurement}
+Let us define what we mean on the last step - how do we readout our answer from $\ket{\psi} = \sum_{x \in \set{0, 1}^n}\alpha_x \ket{x}$ our final state? We choose an orthonormal basis for the vector space $E = \set{\ket{e_1}, \ket{e_2}, \ldots, \ket{e_{2^n}}}$. And then express $\ket{\psi} = \sum_i c_i\ket{e_i}$ in this basis, with $c_i = \braket{e_i}{\psi}$. Then the Born rule/Dirac postulate tells us that:
+\begin{itemize}
+    \item If we measure $\ket{\psi}$ w.r.t. basis $E$ we obtain $\ket{e_i}$ with probability $\abs{c_i}^2$.
+    \item Furthermore, the measurement collapses the state into $\ket{e_i}$.
+\end{itemize}
+Note that if we measure again in the same basis, we obtain the same sate with certainty - measurement breaks the superposition!
+
+A one-qubit example of measurement is starting with $\ket{\psi} = \frac{1}{\sqrt{2}}(\ket{0} + \ket{1})$, doing a measurement in the $\set{\ket{0}, \ket{1}}$ basis yields either $\ket{0}$ or $\ket{1}$ with probability 1/2.
+
+Another single-qubit is example is starting with $\ket{\psi} = \frac{1}{\sqrt{2}}(\ket{0} + e^{i\phi}\ket{1})$. Measuring in the $\set{\ket{0}, \ket{1}}$ basis yields $\ket{0}$ with probability $1/2$ and $\ket{1}$ with again probability $\abs{\frac{e^{i\phi}}{\sqrt{2}}}^2 = \frac{1}{2}$. But, if we measure in the Hadamard basis of $\set{\ket{\pm} = \frac{1}{\sqrt{2}}(\ket{0} \pm \ket{1})}$, we find something interesting; in this basis we can express $\ket{\psi}$ as:
+\begin{equation}
+    \ket{\psi} = \frac{1 + e^{i\theta}}{2}\ket{+} + \frac{1 - e^{i\theta}}{2}\ket{-}
+\end{equation}
+so we measure outcome $\ket{+}$ with probability $\abs{\frac{1 + e^{i\theta}}{2}}^2 = \cos^2(\frac{\theta}{2})$ and obtain $\ket{-}$ with probability $\abs{\frac{1 - e^{i\theta}}{2}}^2 = \sin^2(\frac{\theta}{2})$.

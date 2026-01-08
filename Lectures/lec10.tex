@@ -1,0 +1,61 @@
+\section{Quantum Algorithms III}
+
+\subsection{Shor, Continued}
+
+Last time, we discussed how to cast order finding in terms of an instance of phase estimation. We showed how the shift unitary $M_a$ has eigenvalues $\omega_r^k = e^{2\pi i k/r}$ that encode the order and eigenvectors $\ket{\psi_k}$:
+\begin{equation}
+    \ket{\psi_k} = \frac{1}{\sqrt{r}}\left(\ket{1} + \omega_r^{-k}\ket{a} + \ldots + \omega^{-k(r-1)}\ket{a^{r-1}}\right)
+\end{equation}
+
+We need to be able to implement exponential powers of $M_a$ - indeed we can do this via a modular exponentiation/repeated squaring algorithm (which reduces an $O(k)$ implementation to an $O(\log k)$ implementation for a power $k$).
+
+The bow on the story is then - without knowing $r$, how do we produce the eigenvectors $\ket{\psi_k}$ (i.e. what quantum circuit will prepare this)? The answer is in fact we \emph{cannot} prepare an individual $\ket{\psi_k}$ without knowing $r$, but we can make use of the trick that the sum over all $k$ gives just the $1$ state!:
+\begin{equation}
+    \frac{1}{\sqrt{r}}\sum_{k=0}^{r-1}\ket{\psi_k} = \ket{1}
+\end{equation}
+because all other terms drop out (sum over roots of unity).
+
+Ok, hold on - now we're trying to do phase estimation without giving an eigenstate of $M_a$. How does this work then? We use the fact that the unitary is linear - we apply the operator to each of the $\ket{\psi_k}$ states in the linear combination. This gives us a superposition of different outputs, with all different $k$. When we measure, we get some phase $\frac{k}{r}$, for some uniformly random $k \in \set{0, \ldots, r-1}$.
+
+So, we get some decimal expansion of $\frac{k}{r}$, which we then apply continued fractions to to extract $r$. This requires that $k, r$ are relatively prime. There is some constant probability that this is not true, and we get the wrong answer. But since factoring is \textbf{NP}, we can just check the answer. In that case, we throw it away and try again. There is a sufficiently high (constant) probability that we succeed, and when we fail, we can verify that we fail. So, this does not turn out to be a problem.
+
+\subsection{Grover Search Algorithm}
+
+\begin{defbox}{: Unstructured Search}
+    Given access to a function $f: \set{0, 1}^n \to \set{0, 1}$ (as an oracle/a black-box circuit computing $f$). The problem: Is there an $x$ so that $f(x) = 1$?
+\end{defbox}
+
+Classically, the computational complexity of this is $O(N) = O(2^n)$ (because we need to query every input in the worse case!). 
+
+Note that this generalizes many \textbf{NP}-complete problems, e.g. SAT. But notice that there can be problems that can be easier than unstructured search due to structure (in some sense this unstructured search is a hard iteration of a problem).
+
+Grover tells us that we can solve the search in $2^{n/2}$ oracle queries, or $2^{n/2}\text{poly}(n)$ time. Generally we want exponential quantum speedups, while this is only a polynomial (square root) speedup - thus we would never want to use this. The speedup is quite small, and the constant is quite large; the system size we require to see such a speedup requires order $\sim 1$ million qubits... by which time there are better things we could be doing. So be cautious of any startup that tells you that they want to do optimization a la Grover.
+
+Let's now discuss the search algorithm. Suppose that $\ket{a}$ is the marked state, such that $f(a) = 1$. 
+\begin{enumerate}
+    \item Start with a uniform superposition $\ket{\psi_0} = H^{\otimes n}\ket{0^n}$ on $n$ qubits.
+    \item Now, consider the angle between the uniform state and the marked state:
+    \begin{equation}
+        \frac{\pi}{2} - \theta = \arccos(\braket{\psi_0}{a}) = \arccos(\frac{1}{\sqrt{N}}) \implies \sin(\theta) \sim \theta = \frac{1}{\sqrt{N}}
+    \end{equation}
+    \item We will apply many rounds each consisting of two unitary reflection operators - after each round, the angle between the current state $\ket{\psi_n}$ and $\ket{a}$ decreases. 
+\end{enumerate}
+The idea is that we will only need $\sqrt{N}$ rounds.
+
+The motivation for Grover's first operator is as follows: to reflect a vector $\v{w}$ around another vector $\v{v}$, we express $\v{w} = \beta \v{v} + \v{v}^\perp$ and we output $\beta\v{v} - \v{v}^\dag$. Thus we want a reflection about $\ket{e} = \sum_{x \neq a}\ket{x}$ (the state orthogonal to $\ket{a}$ in the plane spanned by uniform superposition and $\ket{a}$). We implement this via taking the current state $\ket{\psi} = \sum_x \alpha_x \ket{x}$ which we can think of as $\sum_{x \neq a}\alpha_x\ket{x} + \alpha_a\ket{a}$. We want to flip the sign of this last term (i.e. get $\sum_{x \neq a}\alpha_x\ket{x} - \alpha_a\ket{a}$). Thus we need only query the oracle once! (because the oracle precisely has the action of flipping the sign).
+
+The second operator is as follows; we want to reflect around the uniform superposition $\frac{1}{\sqrt{N}}\sum_x \ket{x}$. Recall that $H^{\otimes n}$ maps to/from uniform superposition and $\ket{0^n}$. So, if we have $\sum_x \alpha_x \ket{x}$, then $H^{\otimes n}\ket{\psi} = \sum_x \beta_x\ket{x}$. Now, implement the unitary that multiplies by $-1$ if the second register is in anything but $\ket{0^n}$, so we get $\beta_{0^n}\ket{0^n} - \sum_{x \neq 0^n}\beta_x\ket{x}$. Then by taking $H^{\otimes n}$ again we map to $\ket{0^n} \to \ket{u}$.
+
+The proof by picture: 
+\begin{enumerate}
+    \item Start in $\ket{u} = \frac{1}{\sqrt{N}}\sum_x \ket{x}$
+    \item Want to reach $\ket{a}$ with $f(a) = 1$
+    \item We repeatedly apply two reflections that we claim that take $\ket{\psi}$ closer to $\ket{a}$
+    \item Consider the plane spanned by $\ket{a}, \ket{u}$ 
+    \begin{center}
+        \includegraphics[scale=0.5]{Images/Grover.png}
+    \end{center}
+\end{enumerate}
+
+This shows the upper bound of the algorithm. Next class, we will show the lower bound, proving that the Grover algorithm is optimal.
+

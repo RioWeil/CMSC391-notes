@@ -1,0 +1,56 @@
+\section{Efficient Simulation of Gaussian Boson Sampling}
+\subsection{Setup}
+\begin{itemize}
+    \item Inputs are squeezed states + vacuum states rather than fock states + vacuum states.
+    \item Exact simulation of probabilities is $\#P$-hard
+\end{itemize}
+
+Amounts to computing a halfnian:
+\begin{equation}
+    \text{haf}(A) = \sum_{\rho \in P_n}\prod_{\set{i, j} \in \rho}A_{i, j}
+\end{equation}
+sums over all perfect pairings of indices, and encodes pair-creation correlations. E.g. for $A \in \CC^{4\times 4}$:
+\begin{equation}
+    \text{haf}(A) = A_{12}A_{34} + A_{13}A_{24} + A_{14}A_{23}
+\end{equation}
+
+Note: Permanent is perfect matching on a bipartite graph, Halfnian is perfect matching on an arbitrary graph.
+
+\subsection{Methods}
+
+What we do instead - look for low mode marginals:
+\begin{itemize}
+    \item Single mode: Probability of a single mode's detector outcome, i.e. clicks or not.
+    \item Two-mode: Joint distribution over pairs of modes.
+\end{itemize}
+These can be computed in polynomial time.
+
+Method 1: Boltzmann machines
+
+\begin{equation}
+    \underbrace{p(\v{z})}_{\text{prob. of $\v{z}$}} = \frac{1}{Z}\exp(\sum_a \underbrace{\lambda_a}_{\text{bias}} z_a + \sum_{a < b}\underbrace{\lambda_{ab}}_{pairwaise correlations}z_az_b + \sum_{a < b < c}\lambda_{abc}z_az_bz_c)
+\end{equation}
+
+Training of BM model: Gradient descent to optimize BM parameters such that its 1-2 mode marginals match the ideal GBS marginals. Use Thouless/Anderson/Palmer mean field.
+
+Method 2: Greedy heuristic
+\begin{enumerate}
+    \item Initialize with all 0s
+    \item Iterate (flip that improves agreement)
+    \item Evaluate improvement
+    \item Repeat until best approximation is found to target marginals.
+\end{enumerate}
+
+We can look at statistical distance between two probability distributions in 2 ways; Total variation distance (TVD):
+\begin{equation}
+    \delta = \frac{1}{2}\sum_z \abs{p(z) - q(z)}
+\end{equation}
+and Kullback-Leibler divergence:
+\begin{equation}
+    D_{KL}(p, q) = \text{XE}(p, q) - H(p) = \sum_\v{z} p(\v{z})\log\frac{p(\v{z})}{q(\v{z})}
+\end{equation}
+
+\subsection{Results + Limitiations}
+Looked at $\leq 14$ mode marginals, which are tractable to compute. They find that their techniques outperforms thermal samplers (i.e. experiment with thermal noise).
+
+Does not apply to RCS because there the marginals are essentially uniform (i.e. no information in the marginals). Also, the classical sampler does not recover full global bit-string probabilities.

@@ -1,0 +1,66 @@
+\section{Student Talk: Computational Complexity of Linear Optics}
+\subsection{Intuition + Motivation}
+\begin{itemize}
+    \item Classical Galton board - balls hits pegs and make left/right choices. Probabilities multiply without phases/interference. The output distribution is binomial $\to$ Gaussian.
+    \item In BosonSampling, $n$ indistinguishable bosons traverse an $m \times m$ interferometer $U$. Amplitudes interfere; these are coherent sums, with the probabilities related to the permanents of $U$ (\#P hard), where the hardness of BosonSampling is thought to arise.
+    \item BosonSampling is non-universal and non-adaptive, yet sampling the output photon number distribution is classical intractable.
+\end{itemize}
+
+\subsection{The setting}
+\begin{itemize}
+    \item $m$ optical modes and $n$ single photons with $n \ll m$ in a quantum system
+    \item Pass through $m \times m$ linear optical network described by $U$
+    \item Perform photon number measurements.
+    \item Sample from output distribution over phtoon count patterns
+    \item Input is one photon in $n$ inputs and vacuum elsewhere $\ket{\underbrace{1111\ldots 1}_n 0000\ldots 0}$. Output is a Fock state is $\ket{s_1s_2 \ldots s_m}$ with $\sum_k s_k = n$.
+    \item Creation opeators; $a^\dag_j$ creates photon in mode $j$:
+    \begin{equation}
+        \ket{\psi_{\text{in}}} = a^\dag_{i_1}a^\dag_{i_2}\ldots a^\dag_{i_n}\ket{0}
+    \end{equation}
+    and the linear optical network Heisenberg-evolves these operators
+\end{itemize}
+
+\subsection{Reason for Hardness}
+\begin{itemize}
+    \item Indistinguishability implies amplitudes add with all sign over all permutation
+    \item Fermions would be determinants, Bosons would be permanents
+    \item Collision free-regime, with input $i_1, \ldots, i_n$ and output pattern has one in each distinct mode $o_1, \ldots o_n$ and we want to consider the submatrix $U_{[i_1\ldots i_n][o_1\ldots o_n]}$.
+    \item A determinant is:
+    \begin{equation}
+        \det(M) = \sum_{\sigma \in S_n}\text{sgn}(n)\prod_{i=1}^n m_{i, \sigma(i)}
+    \end{equation}
+    which can be computed in poly time via Gaussian elimination. C.f. Permenent is:
+    \begin{equation}
+        \det(M) = \sum_{\sigma \in S_n}\prod_{i=1}^n m_{i, \sigma(i)}
+    \end{equation}
+    Removes the sign, and is $\#$P hard to compute generically.
+    \item Computing permanent of a 0-1 matrix is $\#$P complete. Believed to be strictly harder than NP-complete problems.
+    \item Number of outcomes in collision free regime is $N_{\text{cf}} = \binom{n}{m}$ vs. total size of Fock space is $N = \binom{n + m - 1}{n}$.
+    \item Heuristic for dilute $m \gg n^2$ limit; probability of no collisions becomes $\approx \frac{n(n-1)}{2m}$, so choose $m = \Omega(n^2)$ so collisions are rare and $P_U(S) = \abs{\text{Per}(A_S)}^2$ (don't want a correlated matrix). Outcome count is $\binom{m}{n}$; huge/few repeats.
+    \item $U$ sampled from Haar measure on $U(m)$ (sufficiently random)
+    \item For $n \ll m^{1/6}$, $n \times n$ submatrix of Haar-random $U$ behaves like matrix with iid complex Gaussian entries
+    \item BosonSampling amplitudes involve permanents of Gaussian random matrices.
+    \item Classical simulation:
+    \begin{itemize}
+        \item Exact sampling
+        \item Approx sampling drawing from $\norm{\tilde{P} - P}_TV$ small
+        \item Approximate $P(S)$ for given $S$
+    \end{itemize}
+    generally, hardness results target classical sampling.
+    \item ``Hardness logic chain'':
+    \begin{enumerate}
+        \item BosonSampling involve $\abs{\text{Per}(A)}^2$ for Gaussian random $A$
+        \item Assume exists a poly time classical algorithm that approximate BosonSampling
+        \item Stockmeyer's approximate counting theorem - sampling access allows approx estimation; i.e. exists an $FBPP^{NP^f}$ machine that outputs a good approximation to the counting. Note that the error int the algorithm is multiplicative. Remark that it requires an NP-oracle.
+        \item ... hardness (missed the next 3 steps in the chain because they were going too fast)
+    \end{enumerate}
+    \item Permanent of a random complex Gaussian matrix is hard on matrix + anti-concentration tells us that approximating bosonsampling probabilities is \#P-hard.
+    \item This would cause the PH to collapse; believed to be a strict hierarchy. This is considered very unlikely. A fast classical Bosonsampler would force this, hence not thought to be likely.
+\end{itemize}
+
+\subsection{Experiments}
+\begin{itemize}
+    \item Construct $U$ and well-characterize
+    \item Photon loss, mode mismatch, partial distinguishability distort the ideal distribution - large loss can push to classically simulable regime.
+    \item Variants; scattershot bosonsampling, Gaussian Bosonsampling.
+\end{itemize}

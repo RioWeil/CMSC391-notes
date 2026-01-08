@@ -1,0 +1,79 @@
+\section{Computational Complexity Theory III}
+
+Size of the gap (between completeness and soundness) can be $1/\text{poly}(n)$ for BQP (as we can repeat the algorithm $\text{poly}(n)$ times to amplify the success probability). 
+
+\subsection{$\textbf{P} \subseteq \textbf{BQP}$}
+This proof tells us that quantum computing at least subsumes classical computation. This maybe seems a bit obvious, but where does the subtlety come in? The problem is that quantum computations are reversible due to the unitarity of the gates, i.e. $U$ (a quantum circuit) is unitary with $UU^\dag = U^\dag U = I \implies U^\dag = U^{-1}$. This of not the case for arbitrary classical gates, e.g. consider the AND gate, where AND(0, 1) = AND(1, 0) = AND(0. 0) = 0 (information is lost).
+
+We will resolve this by showing that classical computations can always be made reversible. There are many different proofs of this fact, ours will use the Fredkin, our controlled-SWAP gate.
+
+\begin{defbox}{: Fredkin Gate}
+    The Fredkin is the classical gate which takes inputs $(a, b, c)$ and outputs $(a, b, c)$ if $a = 0$ and $(a, c, b)$ if $a = 1$.
+\end{defbox}
+The Fredkin gate is controlled because the first bit determins what to do. Note that it is self-inverse.
+
+Classically, $\set{AND, NOT}$ is universal. Simulating AND using Fredkin is done by AND(a, b) = third register of Fredkin(a, b, 0). I.e. the third register is 1 iff a, b are 1. Similarly, simulating NOt can be done by observing that NOT(a) = third register of Fredkin(a, 0, 1). 
+
+Note that this reversibility did not come to free - we had to add 1/2 bits for each AND/NOT. This is not a problem because we allow ourselves access to a polynomial number of ancillas.
+
+\subsection{Classical Functions in Quantum Superposition, Phase Kickback}
+Corollary: Classically computing functions in quantum superpositions. Suppose we have $f: \set{0, 1}^n \to \set{0, 1}$ that is computable by a deterministic classical algorithm in poly($n$) time. We'll often need to compute this in quantum superposition, i.e. prepare $\frac{1}{\sqrt{2^{n}}}\sum_x \ket{x}\ket{f(x)}$.
+
+You might want to ask why can't we just prepare $\ket{f(x)}$ - the issue is that $x \to f(x)$ is not reversible and not natively implementable. But, we can implement:
+\begin{equation}
+    U_f: \ket{x}\ket{y} \to \ket{x}\ket{y \oplus f(x)}
+\end{equation}
+with a poly($n$) size quantum circuit. $\oplus$ is XOR. We implement it in this fashion so that this is a reversible operation.
+
+Now, to prepare the desired state, we first create the uniform superposition on the $n$-qubit register by applying $H^{\otimes n}$, then by initializing the $\ket{y}$ register in the $\ket{0}$ register, we can do:
+\begin{equation}
+    \ket{0}^{\otimes n}\ket{0} \stackrel{H^{\otimes n} \otimes I}{\to} \frac{1}{\sqrt{2^n}}\sum_x \ket{x}\ket{0} \stackrel{U_f}{\to}  \frac{1}{\sqrt{2^n}}\ket{x}\ket{f(x)}
+\end{equation}
+
+Sometimes we are interested in preparing $\frac{1}{\sqrt{2^n}}\sum_x (-1)^{f(x)}\ket{x}$. Preparing this is easy:
+\begin{itemize}
+    \item First prepare $\frac{1}{\sqrt{2^n}}\sum_x \ket{x}\ket{f(x)}$.
+    \item Then, apply a phase-flip unitary/$Z$-gate to the second register $U = Z = \m{1 & 0 \\ 0 & -1}$. This gives $\frac{1}{\sqrt{2^n}}\sum_x (-1)^{f(x)}\ket{x}\ket{f(x)}$
+    \item Apply $U_f$ again, which yields $\frac{1}{\sqrt{2^n}}\sum_x (-1)^{f(x)}\ket{x}\ket{f(x) \oplus f(x)} = \frac{1}{\sqrt{2^n}}\sum_x (-1)^{f(x)}\ket{x}\ket{0}$. Now the second register is unentangled from the first register, and can be removed.
+\end{itemize}
+
+The above procedure is suboptimal in the sense that it requires 2 queries to $f$/two uses of $U_f$. We can actually be more clever and do it with one query:
+\begin{itemize}
+    \item Initialize the second register in $\ket{1}$ and apply a Hadamard to both registers, i.e. prepare $\frac{1}{\sqrt{2^n}}\sum_x \ket{x} \otimes \ket{-} = \frac{1}{\sqrt{2^n}}\sum_x \ket{x}\otimes(\frac{\ket{0} - \ket{1}}{\sqrt{2}})$
+    \item Now, apply $U_f$, which yields $\frac{1}{\sqrt{2^n}}\sum_x \ket{x}\otimes(\frac{\ket{f(x)} - \ket{1 + f(x)}}{\sqrt{2}})$. If $f(x) = 0$ then the second register is $\ket{-}$ and if $f(x) = 1$ then the state is $-\ket{-}$. So we are in the overall state $\frac{1}{\sqrt{2^n}}\sum_x (-1)^{f(x)}\ket{x}\otimes \ket{-}$. The desired state!
+    \item Optionally, measure the last qubit in the Hadamard basis and discard the last register.
+\end{itemize}
+
+
+\subsection{The Complexity Hierarchy and BQP}
+So, we've shown that $\textbf{P} \subseteq \textbf{BQP}$. But why shouldn't $\textbf{BQP} \subseteq \textbf{P}$ or $\textbf{BQP} \subseteq \textbf{NP}$ Or should $\textbf{NP} \subseteq \textbf{BQP}$? We have no idea/no proofs, but we have strong reason to believe that the answer to all questions is ``no''.
+
+The best known upper bound (roughly speaking) can simulate any problem in \textbf{BQP} in unbounded error randomized polynomial time (called \textbf{PP}). This class is so powerful because its a class that involves almost random guessing.
+
+Bill's personal belief of the hierarchy:
+
+\begin{center}
+    \includegraphics[scale=0.3]{Images/hierarchy.png}
+\end{center}
+
+We haven't seen \textbf{PSPACE} before - this is the class of decision problems where we have space-limited memory but exponential amount of time. It's clear to see that SAT is in \textbf{PSPACE} because we can just try every possible solution, erasing the memory each time.
+
+Upper bound 1: \textbf{BQP} $\subseteq$ \textbf{PSPACE}
+
+Main idea: Feynman path integral - write acceptance probability of a quantum circuit as a sum with exponentially many terms, each of which can be computed in polynomial space.
+
+Suppose we have a quantum circuit $Q = Q_mQ_{m-1}\ldots Q_1$ on $n + q(n)$ qubits. We can write the acceptance probability of a quantum circuit $Q$ as:
+\begin{equation}
+    \text{Pr}[Q \text{ outputs } 1] = \text{Pr}[\bra{\psi}\Pi_1\ket{\psi}] = \bra{x} \otimes \bra{0^{q(n)}}Q_1^* \ldots Q_m^* \Pi_1 Q_m \ldots Q_1\ket{0^{q(n)}}\ket{x}
+\end{equation}
+Now consider the following:
+\begin{itemize}
+    \item Insert $I$ between each pair of operators
+    \item Note that for the $n$ qubit identity, $I = \sum_x \dyad{x}{x}$
+    \item We can then write:
+\end{itemize}
+\begin{align*}
+    \text{Pr}[Q \text{ outputs } 1] &= \bra{x} \otimes \bra{0^{q(n)}}Q_1^* I Q_2^* \ldots IQ_m^* \Pi_1 Q_m I Q_{m-1}\ldots IQ_1\ket{0^{q(n)}}\ket{x}
+    \\ &= \sum_{x_1, x_2, \ldots x_{2m+2}}(\bra{x} \otimes \bra{0^{q(n)}})\dyad{x_1}{x_1}Q_m^*\dyad{x_2}{x_2}\ldots Q_1\dyad{x_{2m+1}}{x_{2m+2}}(\ket{x} \otimes \ket{0}^{q(n)})
+\end{align*}
+So we have an exponential sum. But each of the matrix elements appearing in the sum above is easy to compute! We know what the gates are! So each term in the sum can be computed in polynomial space. Then by erasing the register each time and then doing the exponential sum, we conclude that $\textbf{BQP} \subseteq \textbf{PSPACE}$.

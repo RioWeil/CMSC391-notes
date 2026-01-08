@@ -1,0 +1,53 @@
+\section{The limits of quantum computation}
+The Grover lower bound is a bound on black box queries - it makes no reference to the locality/depth of the unitaries involved. This is the sense in which is it quite strong/very general. But it is weak in the sense that it is an oversimplification for how the real-world works. E.g. SAT formulas do not have to just be queried, often we make use of the structure. In the white-box world, given a white box unitary we can solve SAT in a single application, by encoding the truth table of the encoded Boolean function. In this setting, we care about time/depth lower bounds. Query lower bounds are a rough proxy for this.
+
+\subsection{\textbf{QMA}}
+We now proceed to discussion of QMA:
+
+Computer science motivation - How do we precisely characterize the computational power of quantum computational models/get white box lower bounds?
+
+Physics motivation - What is the ground state energy of a local Hamiltonian? It turns out this problem is QMA-complete, so the two meet in the middle.
+
+We are interested in the limits of computation - what problems are too hard to be solved by computers efficiently? \textbf{NP} is the class of problems whose solutions can be verified efficiently. One way to think about this is a simple game between two players.
+\begin{itemize}
+    \item Merlin, who knows everything but is dishonest, sends Arthur an efficient Turing machine (capable of solving everything in \textbf{P}) a witness to convince him to accept
+    \item i.e. $L \subseteq \set{0, 1}^n$ is in \textbf{NP} if there exists a deterministic efficient Turing machine (or ``verifier'', Arthur) $V_L$ such that:
+    \begin{itemize}
+        \item ``Completeness'': $x \in L \implies \exists y \in \set{0, 1}^{p(\abs{x})}, V_L(x, y) = 1$
+        \item ``Soundness'': $x \notin L \implies \forall y \in \set{0, 1}^{p(\abs{x})}, V_L(x, y) = 0$
+    \end{itemize}
+    \item We get the class \textbf{MA} (``Merlin-Arthur'') if we allow $V$ to be bounded-error polynomial time and in the YES case $V$ accepts with bounded probability and in the NO case rejects with bounded probability.
+    \item We believe, but cannot prove unconditionally, that $\textbf{MA} = \textbf{NP}$.
+\end{itemize}
+
+What is the quantum analogue? We have \textbf{QMA}, \textbf{QCMA}. In \textbf{NP}, we think about the message being sent as classical. In these quantum analogues, in the first case Merlin sends a quantum state to Arthur with a quantum computer in the second case Merlin sends a classical state to Arthur with a quantum computer (the other way does not make sense). It is easy to see that \textbf{QCMA} $\subseteq$ \textbf{QMA} because quantum states subsume classical states (computational basis states). The opposite inclusion is strongly thought to be false, but not proven.
+
+Arthur is a bounded-error quantum probabilistic verifier. But Merlin, who sends a succint/polynomial sized witness, could be a classical bitstring or quantum state. 
+
+\begin{defbox}{: QMA}
+    A promise problem $A = (A_{\text{yes}}, A_{\text{no}})$ is in \textbf{QMA(c, s)} if there exists a polynomial sized uniform quantum circuit family $\set{Q_n}$ so that for any input $x$:
+    \begin{itemize}
+        \item ``Completeness'': If $x \in A_{\text{yes}}$ then there exists a witness state $\ket{\psi_x}$ such that $Q_{\abs{x}}$ accepts with probability at least $c$
+        \item ``Soundness'': If $x \in A_{\text{no}}$ then for all polynomial length witness states $\ket{\psi}$, the probability $Q_{\abs{x}}$ accepts is at most s.
+    \end{itemize}
+    More formally, let $Q_n$ be Arthur's circuit that acts on $n +p(n)$ qubits (input, witness), which we can also consider the ancilla space intialized as $\ket{0^{p(n)}}$.
+    \begin{itemize}
+        \item If yes, Pr[accept] $= \bra{\psi}\bra{x}Q_n^*\dyad{1}{1}Q_n\ket{x}\ket{\psi} > c$
+        \item If no, Pr[accept] $= \bra{\psi}\bra{x}Q_n^*\dyad{1}{1}Q_n\ket{x}\ket{\psi} < s$
+    \end{itemize}
+    Generally, we take $\textbf{QMA} = \textbf{QMA}(2/3, 1/3)$
+\end{defbox}
+Some variants: 
+\begin{itemize}
+    \item \textbf{QCMA}, wwhere the basis state $y \in \set{0, 1}^{p(\abs{x})}$
+    \item \textbf{QMA}$_\textbf{1}$: perfect completeness ($c = 1$)
+    \item  \textbf{QMA(2)}: Two unentangled Merlins, i.e. witnesses in this case are of the form $\ket{\psi_1} \otimes \ket{\psi_2}$. This turns out to be very important for checking for entanglement - it turns out this is \textbf{NP}-hard, and is not something Arthur can do by himself! Checking that the two Merlins give a tensor product state vs. one Merlin gives an entangled state is hard.
+\end{itemize}
+
+Let us discuss some properties of \textbf{QMA}. Let \textbf{QMA}$_\textbf{m}$ be \textbf{QMA} with witness length $m$. Then:
+\begin{align*}
+    \textbf{QMA} = \bigcup_{m \in \text{poly}(n)} \textbf{QMA}_{\textbf{m}}
+\end{align*}
+We can then amplify so $\textbf{QMA}_{\textbf{m}}(c, s) = \textbf{QMA}_{mr/(c-s)^2}(1-2^{-r}, 2^{-r})$.
+
+There was one more lecture on the local Hamiltonian problem (that I unfortunately missed), as well as a set of student lectures for which I did not take notes.

@@ -1,0 +1,59 @@
+\section{Computational Complexity IV, Quantum Algorithms I}
+
+Last class, we talked about \textbf{BQP}, and showed that $\textbf{P} \subseteq \textbf{BQP}$ - this was a priori not obvious because there are classical gates that are not reversible, but indeed we came up with a construction that allows for all classical computations to be reversible through the use of (polynomially many) ancillas. We also showed that \textbf{BQP} $\subseteq$ \textbf{PSPACE} via a Feynman path integral.
+
+\subsection{\textbf{PP}}
+
+Note that the tighter inclusion is $\textbf{BQP} \subseteq \textbf{PP}$. We will show this later when we discuss \textbf{QMA}. But let's just give some intuition for why \textbf{PP} is powerful. \textbf{PP} is \textbf{BPP} with the ``bounded error'' part removed. In other words, the $\frac{1}{2} \pm \e$ completeness/soundness probability can now have $\e = \frac{1}{\exp(n)}$ (rather than $\frac{1}{\text{poly}(n)}$), so the gap can be inverse exponential, which in some sense allows us to answer questions just via near-guessing.
+
+We want a \textbf{PP} algorithm for SAT - it suffices to have an algorithm that if ``yes'' succeeds with $\frac{1}{2^n}$ and if ``no'' succeeds with probability 0. If the answer is ``yes'', then there is at least 1 satisfying assignment. If the answer is ``no'', then there are no satisfying assignment. So, pick a random bitstring $x$, plug it into the formula. If it is satisfied, answer ``yes'', if it is not satisfied, then answer ``no''. Actually, to ensure that we are centered around $1/2$, if $\phi(x) = 1$ then we accept, otherwise we accept with probability $\frac{1}{2} - \frac{1}{2^{n+1}}$ and reject with probability $\frac{1}{2} + \frac{1}{2^{n+1}}$. This is very simple, but is nevertheless a \textbf{PP} algorithm for solving SAT (and most \textbf{PP} algorithms tend to be sort of ``stupid'' in this way - exponential gaps give us a lot of leeway). This shows that \textbf{NP} $\subseteq$ \textbf{PP}.
+
+\subsection{Discrete Fourier Transform}
+We go through this section quickly, because you should have seen it already. First, let's review the discrete Fourier transform (note: we will always be thinking about discrete FTs in this course). Suppose $M$ is an integer and $f: \ZZ_M \to \CC$ is a complex valued function, so its Fourier transform $\hat{f}: \ZZ_M \to \CC$ is given by:
+\begin{equation}
+    \hat{f}(t) = \frac{1}{\sqrt{M}}\sum_{x \in \ZZ_M}f(x)\omega^{xt}
+\end{equation}
+where $\omega = \frac{2\pi i}{M}$ is a primitive $M$-th root of unity. If we write the function $\v{f}$ as a vector:
+\begin{equation}
+    \v{f} = \m{f(0) \\ f(1) \\ \vdots \\ f(M-1)} \in \CC^M
+\end{equation}
+and we also do the same for the Fourier transform $\hat{f}$, then these vectors are related by a change of basis $\hat{\v{f}} = F_M\v{f}$ where the matrix $F_M$ has the form:
+\begin{equation}
+    F_M = \frac{1}{\sqrt{M}}\m{1 & 1 & 1 & 1 & \cdots & 1 
+    \\ 1 & \omega & \omega^2 & \omega^3 & \cdots & \omega^{M-1}
+    \\ 1 & \omega^2 & \omega^4 & \omega^6 & \cdots & \omega^{2(M-1)}
+    \\ \vdots & \vdots & \vdots & \vdots & \ddots & \vdots
+    \\ 1 & \omega^{M-1} & \omega^{(M-1)^2} & \omega^{(M-1)^3} & \cdots & \omega^{(M-1)^{M-1}}}
+\end{equation}
+Straightforward multiplication of $\v{f}$ by $F_M$ would take $M^2$ operations by naive matrix multiplication.
+
+Note that by exploiting the symmetry of $F_M$ it is possible to recursively perform the transform in $O(M\log M)$, this is the fast fourier transform (FFT). Specifically, we can use Divide and conquer to recursively break down a DFT into many smaller DFTs:
+\begin{align*}
+    \hat{f}(j) &= \sum_{i=0}^{M-1}\omega^{ij}f(i)
+    \\ &= \sum_{i \text{ even}}\omega^{ij}f(i) + \sum_{i \text{odd}}\omega^{ij}f(i) \quad \text{(splitting into odd/even terms)}
+    \\ &= \sum_{i'=0}^{M/2-1}(\omega^{2i'})^j f(2i') + \omega^j\sum_{i'=0}^{M/2-1}(\omega^{2i'})^j f(2i' + 1)
+    \\ &= (F_{M/2}\vec{f_{\text{even}}})(j) + \omega^j(F_{M/2}\vec{f_{\text{odd}}})(j)
+\end{align*}
+
+\subsection{Quantum Fourier Transform}
+An important property of $F_M$ is that it is unitary. Let's go with the simple geometric proof; the inner product rows of $i \neq j$ yields:
+\begin{equation}
+    \frac{1}{M}\sum_{k=0}^{M-1}\omega^{ik}\omega^{-jk} = \frac{1}{M}\sum_{k=0}^{M-1} \omega^{(i-j)k} = \delta_{ij}
+\end{equation}
+The last equality is a bit nontrivial - how do we see this? If $i \neq j$ then $\omega^{i-j}$ is an $N$th root of unity, let's call it $\omega_1$. Geometrically, the sum over this root of unity has center of mass at the origin. Analytically, we can see via the geometric series formula.
+\begin{equation}
+    \frac{1}{M}\sum_{k=0}^{M-1}\omega^{(i-j)k} = \frac{1}{M}\sum_{k=0}^{M-1}\omega_k^k = \frac{1 - \omega_1^M}{1 - \omega_1} = 0
+\end{equation}
+
+Ok, so we've shown that $F_M$ is a unitary. But how do we implement it in terms of gates? Using similar ideas to the FFt, we can decompose $F_M$ into a quantum circuit of size $O(\log^2 M) = O(n^2)$ (with $M = 2^n$) which is polynomial.
+
+This itself is insufficient for showing a quantum speedup - there's a bit of sleight of hand here, and it has to do with the fact that the DFT computed classically and the quantum computer computing the QFT are different. Let's think about the QFT - we start with $\ket{0}^{\otimes n}$, then apply $H^{\otimes n}$ to get the uniform superposition state, then apply the QFT, now we have a pure quantum state whose amplitudes are Fourier coefficients. But when we measure, we get a bitstring out, \emph{not} the Fourier coefficient (unlike the classical case) - in other words the QFT allows us to do Fourier sampling - sample from the distribution with weight determined by the Fourier coefficients. Actually getting the distribution requires then $O(n2^n)$ time... so its not clear we have a speedup. Actually, this is often misconstrued. For example the HHL algorithm prepares a quantum state which corresponds to the solution to a system of linear equations... you can't directly read out the solution from this! 
+
+Note that if a function has a coefficient that is very large (e.g. inverse poly) then by repeat sampling (polynomial times) we can approximate the answer, but generically most Boolean functions are ``flat'' and so we require an exponential number of samples.
+
+The upshot - the QFT is a good \emph{subroutine}, but in itself does not yield a useful speedup. We will see it arise in Shor's algorithm, soon.
+
+\subsection{Phase Estimation}
+This construction is from Kitaev in 1995. He turns out to rediscover Shor's algorithm 6 months later. Apparently, he was aware of Shor insofar as he was told about it at a conference, but allegedly in Moscow he did not have internet access to Shor's paper... so he decides to reprove it for himself.
+
+The algorithm turns out to be similar, but different. The quantum circuit is the same, but the analysis is completely different. In this class we'll look at Kitaev's analysis, which (beyond him being Bill's supervisor...) is simpler and introduces a phase estimation subroutine, which gives rise to a wide class of quantum algorithms. The fact that Shor can be viewed as a special case of phase estimation gives intuition for why Shor's algorithm works!

@@ -1,0 +1,66 @@
+\section{Computational Complexity Theory}
+
+\subsection{Intro to Complexity Theory}
+Today, we start discussing computational complexity theory, departing from the first 4 lectures worth of discussion of quantum mechanics. As much as I (Bill) loves this subject, we won't be comprehensive here - we will discuss the bare minimum such that things will make sense here. The language itself is not that complicated, but it does take some getting used to.
+
+At a high level, it is the computational complexity theory is the study of the comparative difficulty of solving computational problems with the various amounts of resources. Traditionally, the most studied aspects are time complexity (how many gates?) and space complexity (how much resources do we need)? We also have query complexity (how many queries do we require?), entanglement resource etc. This is all to say that computational complexity can encompass multiple different resources.
+
+Q: Are query and time complexity the same?
+A: Related, but not the same. Time can be drastically smaller than query complexity. It may be that we can use something about the structure of the problem (whitebox notion) and that we require a lot less time than queries. An interesting remark - it tends to be much easier to prove things in blackbox settings, and this is related to the difficulty of the $P \stackrel{?}{=} NP$ problem.
+
+
+\begin{defbox}{: Decision Problem}
+    Consider a decision language $L \subseteq \set{0, 1}^*$. This represents the ``yes'' inputs to a computational problem whose answer is ``Yes'', or ``No''. The decision problem is: Given input $x \in \set{0, 1}^n$, decide if $x \in L$. 
+\end{defbox}
+
+Not all computational problems are decision problems. E.g. sampling problems are not (and Bill thinks NISQ demonstration of quantum advantage is not possible for decision problems! Noise makes decision problems trivial... but this is an open problem). Factoring looks like its not, but can be framed as a decision problem (more on this later).
+
+Somewhat equivalent way of thinking about the problem - computability of Boolean functions. But this isn't quite fully general, because you can consider \emph{promise languages}, which is not defined over all inputs.
+
+\begin{defbox}{: Promise Languages}
+    Promise languages are those where $L_{\text{yes}} \cup L_{\text{no}}$ (the union of the yes/no answers) is not hte full space $\set{0, 1}^*$.
+\end{defbox}
+
+We can see that in the Boolean function case, it needs to be defined on all possible inputs, so it does not capture this notion of a promise language.
+
+Our interest will be in the minimal amount of computational resources needed for an algorithm to decide specific languages $L$, as a function of the input length $\abs{x}$. 
+
+We can consider worst case complexity (how hard is the worst $x$?) which is the usual notion, though there are others (such as average case complexity, where we consider a random $x$).
+
+\begin{defbox}{: SAT}
+    $\text{SAT} = \set{\psi: \set{0, 1}^n \to \set{0, 1} \text{, a Boolean function on $n$ variables $\exists y$ s.t. $\psi(y) = 1$}}$
+\end{defbox}
+The computational task we try to solve is to decide, given an inpu tof a Boolean formula $\rho$, is $\rho \in \text{SAT}$? 
+
+Recall a Boolean formula on $n$ variables is a Boolean expression involving the variables, negation of the variables, and OR/AND of the two variables.
+
+Sometimes, we restrict to the 3SAT problem (the first nontrivial SAT) in which the Boolean formula is to be a 3CNF, e.g. $(x_1 \lor x_2 \lor \lnot x_3) \land (x_4 \lor x_5 \lor \lnot x_3)\ldots$. Restricting to a constant is important because then considerations of locality can enter.
+
+\subsection{Complexity Classes}
+Complexity classes are sets of problems/decision languages that are grouped together due to the existence of an algorithm that uses similar amounts of resources to solve the problems.
+
+The most important complexity classes are \textbf{P} and \textbf{NP}.
+
+\begin{defbox}{: \textbf{P}}
+    \textbf{P} is ``deterministic polynomial time'', which is roughly the computational problems that can be solved in some poly($\abs{x}$) amount of time (classical gates) by a deterministic turing machine.
+\end{defbox}
+
+A nontrivial example is the primality algorithm (AKS algorithm)/determining whether a number is prime or not (this was only proven in 2007!). Another is a the problem of determining the shortest path in a weighted graph (Dijkstra's algorithm). There are also trivial problems, e.g. given a string is the first bit 0 or 1.
+
+\begin{defbox}{: \textbf{NP}}
+    \textbf{NP} is ``nondeterministic polynomial time'', roughly the computational problems whose ``yes'' answers can be verified in poly($n$) time. 
+\end{defbox}
+
+Example: SAT, Factoring. How do we frame factoring as a decision problem? Textbook answer: Given a tuple $(n, m)$, is there a nontrivial factor of $n$ that is less than $m$? E.g. $(15, 14)$ is yes as $15 = 5 \cdot 3$ both of which are less than 14.
+
+Why is this equivalently powerful? We can do binary search by looking at $(n, n/2^1), (n, n/2^2), (n, n/2^3)$. We only have to do this a logarithmic number of times, which is efficient. The other way is even clearer - if we can prime factorize in the gradeschool sense, then it is very easy to solve this $(n, m)$ decision problems (just check $m$ against the smallest nontrivial prime factor of $n$).
+
+\begin{defbox}{: \textbf{coNP}}
+    \textbf{coNP} is ``nondeterministic polynomial time'', roughly the computational problems whose ``no'' answers can be verified in poly($n$) time. 
+\end{defbox}
+
+Example: Version of SAT where we ask ``does there exist a Boolean function which is \emph{unsatisfiable}?''
+
+Interesting feature - factoring is in both \textbf{NP} and also \textbf{coNP}. Why is factoring in \textbf{NP}? If I send you $(n, m)$ and send you the list of the prime factorization of $n$ (first I would check that all the factors are prime (primality, in \textbf{P}) and then multiply them together to make sure that indeed it is in $n$), then it is easy to check if the instance is ``yes''. With the identical setup, then it is easy to check if the instance is ``no''. The same witness serves both the yes and no answers! Why is this important? We strongly believe that $\textbf{NP}$-complete problems cannot be in  $\textbf{coNP}$, because if this were true then  $\textbf{coNP} = \textbf{NP}$ but this would result in the collapse of the polynomial hierarchy. Something that is often got very wrong in the media - quantum computers are thought to \emph{not} to be able to solve NP-complete problems, and factoring is not (thought to be) one (again, if factoring is \textbf{NP}-hard then the polynomial hierarchy collapses).
+
+\textbf{P} vs. \textbf{NP} is the main problem in computer science. $\textbf{P} \subseteq \textbf{NP}$ is clear because for a $\textbf{P}$ problem we can just solve the problem efficiently. The 1-million dollar question is $\textbf{NP} \subseteq \textbf{P}$. In order to prove equality, it suffices to give an efficient algorithm to so-called any \textbf{NP}-complete problem (e.g. 3-SAT). There is mounting evidence that this is not possible, and so it is thought that $\textbf{P} \neq \textbf{NP}$, but showing this is very hard. Proving two classes are equal is just producing an algorithm - proving two classes are unequal is showing that there exists no possible algorithm.

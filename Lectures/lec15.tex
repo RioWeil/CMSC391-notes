@@ -1,0 +1,54 @@
+\section{Student Talk: Classical Simulation of Noisy Circuits}
+
+\subsection{Motivation for Classical Simulation}
+Simulating quantum circuits is the basis of many supremacy experiments, and is a leading proposal for demonstrating tasks that exceed classical computational power.
+\begin{itemize}
+    \item Ideally, circuits rapidly become highly entangled and anti-concentrated, producing output distributions believed to be hard to sample
+    \item Noisy case: With realistic constant rate noise, circuits lose structure with depth, raising the possibility that noisy quantum circuits may be easy to simulate.
+    \item Depolarizing noise damps Pauli components with large Hamming weight, so only low-weight Pauli paths make non-negligible contributions to the noisy output.
+    \item Truncation: Noisy output distribution can be well-approximated by summing over Pauli paths whose weight is at most $l$
+    \item Noisy RCS is classical simulable in poly time, so noise eliminates the hardness guarantee - reduces the complexity
+\end{itemize}
+
+\subsection{MPS and Noise/Entanglement Scaling}
+\begin{itemize}
+    \item This concept motivates studying how noise limits the physical Hilbert space complexity, by preventing entanglement in the state from growing without bound.
+    \item Classical simulation becomes efficient when the entanglement of the noisy circuits saturates, leading to bounded bond dimension in tensor network/MPS representations.
+    \item Sets the stage for practical algorithms.
+    \item Exact simulation requires a vector of size $\sim 2^{N}$ - highly entangled parts of $\mathcal{H}$ are hard to simulate. (Note: Bit of a physicist's simplification/intuition - we have to measure in QC, so whether it is completely necessary to store this vector is not obviou - the power of quantum computing is more subtle than this, e.g. entanglement/interference).
+    \item If each two-qubit gate has fidelity $f = 1-\e$ then for an $N$-qubit, depth $D$ circuit we have $F \sim (1-\e)^{ND}$ so we can't reach the very highly entangled state. 
+    \item We can compress the wavefunction with high accuracy for low entanglement levels. This compression does introduce a finite error rate.
+    \item Across a bipartition, we write the Schmidt decomposition:
+    \begin{equation}
+        \ket{\Psi} = \sum_\mu S_\mu \ket{\mu}_A\ket{\mu}_B
+    \end{equation}
+    with the significant $S_\mu$ values determining the required bond dimension $\chi$. Entanglement entropy is the Shannon entropy of the singular values.
+    \item We can then write an MPS:
+    \begin{equation}
+        \ket{\Psi} = \sum_{\set{i_n}}M^{(1)i_1}M^{(2)i_2}\ldots M^{(N)i_N}\ket{i_1 \ldots i_N}
+    \end{equation}
+    \item Noise keeps $\chi$ small because noisy circuits supress singular values
+    \item Two qubit updates scale as $O(\chi^3)$, so a bounded $\chi$ enables efficient classical simulation.
+    \item Remark: Here we think about density matrices $\rho_\Psi$ after noise, so we actually think about the MPS of the purification.
+    \item Key finding - as the depth of the circuit increases, the fidelity:
+    \begin{equation}
+        f_n = \abs{\bra{\Psi_T(n)}C_z\ket{\Psi_T(n)}}^2 \to f_\infty
+    \end{equation}
+    a depth independent value.
+    \item Remark: Noise is assumed to be i.i.d.
+    \item For random circuits, successive truncation errors are multiplicative. The quantum noisy circuit can be estimated when:
+    \begin{equation}
+        F \approx (f_\infty(\chi))^{ND/2}
+    \end{equation}
+    with the entire simulation governed by the per-gate fidelity $f_\infty(\chi)$.
+    \item Large $\chi$ reduces $\e_\infty(\chi) = 1 - f_\infty(\chi)$, but after a point, improving accuracy requires exponentially large $\chi$. Impies a finite saturated $\e_\infty(\chi)$ bounds the MPS bond dim.
+\end{itemize}
+
+\subsection{Application to 2D circuit + Conclusions/Implications}
+\begin{itemize}
+    \item 2D circuits hard to map to MPS
+    \item Block grouping approach of qubits - keeps $\chi$ manageable.
+    \item Depth-20 circuit on 54 occupies only $1.5 \times 10^{-6}$\% of the Hilbert space. I.e. close to the maximally mixed state (product state).
+    \item Conclusion: Noise restricts state complexity for classical TN methods to be accessible.
+    \item Implications for ``quantum advantage''; dependence of classical hardness of RCS and its dependence on noise, other messages of beyond-the-noise assumptions made in this paper etc.
+\end{itemize}

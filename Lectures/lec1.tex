@@ -1,0 +1,37 @@
+\section{Overview and History}
+\subsection{Class Overview and Schedule}
+\textcolor{red}{Note: Lectures 1-4 are based on the provided powerpoint slides, as I was away for these lectures.}
+
+This course is a graduate course on the theory of quantum computation - the focus will be on results relevant to physics, with a particular focus on the power/limitations of near-term (``NISQ''-era) quantum experiments. The goal is to not be comprehensive, but sample some of the relevant results in the field.
+
+The lectures will be based on self-contained slides, but for extra references one can consult ``Quantum Computation and Quantum Information'' by Nielsen and Chuang or ``Classical and Quantum Computation'' by Kitaev, Shen, and Vyalvi.
+
+The rough agenda (amenable to modification) looks like:
+\begin{itemize}
+    \item Lectures 1-4: Basics of Quantum computation, Quantum algorithms, BBBV lower bound on the query complexity of Grover's algorithm
+    \item Lectures 3-6: Hamiltonian complexity and \textbf{QMA}. We will discuss the ultimate limits of quantum computation and the hardness of computing the ground state energy of a local Hamiltonian.
+    \item Lectures 7-10: Complexity theoretic background for quantum supremacy experiments
+    \item Lectures 11-14: Introduction to the theory of quantum advantage/supremacy experiments
+    \item Lectures 15-16: Student presentations
+\end{itemize}
+
+\subsection{The Truth about Quantum Computation}
+There has been a rising level of interest in quantum computation; huge media hype and industry interest from huge companies (Google, Microsoft, IBM etc.) and startups (IonQ, QuEra, etc.) alike.
+
+Let us look past the hype. Quantum computing is a genuinely different model of quantum computation, which can use the principles of quantum mechanics to perform very particular problems exponentially faster than classical computers. It will not be a panacea; they will not be able to solve \textbf{NP}-complete problems (e.g. most optimization problems) efficiently. It will require us to rethink many ideas in classical computer science.
+
+\subsection{History}
+\begin{itemize}
+    \item 1980s: Benioff, Deutsch, Feynman propose quantum computation as a way to simulate quantum systems; to date the quantum simulation problem (e.g. simulate time evolution or estimate ground state energies) remains as one of the most useful potential applications.
+    \item 1993: Vazirani and Bernstein formalize the quantum computing model and give an ``oracle problem'' which can be solved in 1 quantum query and requires $\Omega(n)$ classical queries.
+    \item 1994: Simon (while trying to prove otherwise!) shows the first exponential quantum speedup ($O(n)$ quantum queries vs. $\Omega(2^{n/2})$ classical queries) for period finding. Both this and the above cases were contrived problems structured to find a quantum advantage.
+    \item 1994: Shor adapts Simon's algorithm to solve integer factorization in poly($\log(N)$) steps! This is still one of the primary motivating algorithms for the field, and tells us that large fault-tolerant devices will break public key cryptography.
+    \item 1995/1996: Grover realizes that quantum computers have a quadratic ($O(2^{n/2})$ quantum vs. $O(2^n)$ classical) advantage in the unstructured search problem. To date, most provable algorithms are based on Shor or Grover. 
+\end{itemize}
+
+\subsection{Why the interest?}
+As theoretical computer scientists, contemporary theory is based on the ``Extended Church-Turing thesis'', wherein every problem that can be solved efficiently by a feasible model of computation can be solved with at most polynomial slowdown on a classical Turin gmachine. This motivates the Turing machine as \emph{the} model for understanding computation. But it can never be proven if true. Quantum computation is the only viable(?) model that seems to violate this thesis, putting the foundations of theoretical computer science into question. This comes with some skepticism - we have yet to see Shor implemented, and we don't know if factoring is provably classical hard (and indeed, there are skeptics that view Shor as an impossibility ``proof'' of quantum computation).
+
+Much of the recent excitement comes from experimental advances leading into the Noisy Intermediate Scale Quantum/NISQ era, where several groups have implemented small, noisy, but programmable devices. The noise and space limitations are such that many quantum algorithms (e.g. Shor) cannot be run, but also are big enough that they cannot be naively simulated by classical computers!
+
+As a comment, research in QC mirrors the early 90s - we have not yet discovered many useful speedups for near-term devices, and rather the focus is on demonstrating the first experimental violation of the Extended Church-Turing thesis. We have candidate problems that are within reach of experiment and have provable evidence of classical hardness - but at the moment these are contrived and reverse-engineered problems (i.e. not useful). We hope that (like the 90s), these results may inspire the foundations of useful quantum algorithms. Indeed, these initial ``quantum supremacy'' results will be one of the focuses of this course.

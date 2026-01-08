@@ -1,0 +1,106 @@
+\section{Quantum Algorithms II}
+Factoring arguably the most impressive result in quantum computing, from a conceptual (and pragmatic!) point of view. At the same time, the way that physicists present this often overcomplicates the algorithm. The goal for today is to present this as clearly as possible. We will first describe phase estimation, and then discuss factoring as a special case.
+
+\subsection{Phase Estimation}
+Let $U$ be an $N \times N$ unitary matrix, then it has orthonormal eigenvectors which we will call $\ket{\psi_1}, \ket{\psi_2}, \ldots \ket{\psi_N}$, each with eigenvalues $\lambda_j = e^{2\pi i \theta_j}$ where $\theta_j \geq 0$ is called the phase. The proof is left as an exercise.
+
+\textit{Proof.} Since $UU^\dag = U^\dag U (= I)$, $U$ is normal and hence has a spectral decomposition and can be diagonalized as $U = \sum_i \lambda_j \dyad{j}{j}$ for an orthnormal basis $\set{\ket{i}}$ (for the proof of the spectral decomposition, see, e.g., Box 2.2 of Nielsen and Chuang). Now, by unitarity, we have that:
+\begin{equation}
+    UU^\dag = I \implies \sum_{j}\abs{\lambda_j}^2 \dyad{j}{j} = \sum_j 1 \dyad{j}{j}
+\end{equation}
+which implies that all $\lambda_j = e^{i\theta_j}$ for some real $\theta_j$. \qed
+
+The phase estimation problem is as follows; as input, we have a quantum circuit for implementing a $2^n \times 2^n$ unitary $U$, and an eigenvector $\ket{\psi_j}$, and as output we want an approximation to the phase $\theta_j$.
+
+The classical complexity of this problem is a bit subtle. The issue is not in describing $U$ (has a polynomial description of gates), but in describing the eigenvector $\ket{\psi_j}$ - this is described by $2^n$ numbers - but there is no succint description of this eigenvector (if we only have access to a classical computer). So for this problem we can't directly compare the quantum and classical cases.
+
+\subsection{Controlled-Quantum Circuits}
+Given a quantum circuit $U$ on $n$ qubits, we call the following circuit of the controlled-$U$, acting on $n+1$ qubits:
+\begin{equation}
+    C(U)\ket{0}\ket{\psi} \to \ket{0}\ket{\psi}
+\end{equation}
+\begin{equation}
+    C(U)\ket{1}\ket{\psi} \to \ket{1}U\ket{\psi}
+\end{equation}
+In circuit form, we write it as the following:
+
+\begin{center}
+    \includegraphics[scale=0.5]{Images/CU.png}
+\end{center}
+
+We can generalize this to a $k$-controlled quantum circuit. This is the circuit that takes $m$ ancilla bits and uses this to implement a power of the unitary:
+\begin{equation}
+    C_k(U)\ket{k}\ket{\psi} \to \ket{k}U^k\ket{\psi}
+\end{equation}
+
+Subtlety - although $U^k$ is unitary, we cannot necessarily efficiently implement it given an efficient representation of $U$ - i.e. $k$ can be exponential in the number of ancilla bits $n$, and $U^{2^n}$ is of course not guaranteed to be efficient!
+
+\begin{center}
+    \includegraphics[scale=0.5]{Images/CkU.png}
+\end{center}
+
+\subsection{Poor Man's Phase Estimation}
+Now that we can control our circuits, we can solve the phase estimation problem (with limited precision). Say we are given $U$ and eigenstate $\ket{\psi}$ with eigenvalue $\lambda$. Consider the following quantum circuit:
+
+\begin{center}
+    \includegraphics[scale=0.5]{Images/PoorQPE.png}
+\end{center}
+
+The action of this circuit is:
+\begin{align*}
+    \ket{0}\ket{\psi} &\stackrel{H_1}{\to} \frac{1}{\sqrt{2}}(\ket{0} + \ket{1})\ket{\psi}
+    \\ &\stackrel{C(U)}{\to} \frac{1}{\sqrt{2}}\ket{0}\ket{\psi} + \frac{1}{\sqrt{2}}\ket{1}U\ket{\psi} = \left(\frac{1}{\sqrt{2}}\ket{0} + \frac{\lambda}{\sqrt{2}}\ket{\sqrt{2}}\ket{1}\right)\ket{\psi}
+    \\ &\stackrel{H_1}{\to} \frac{1 + \lambda}{2}\ket{0} + \frac{1-\lambda}{2}\ket{1} = \frac{1 + e^{i\theta}}{2}\ket{0} + \frac{1-e^{i\theta}}{2}\ket{1}
+\end{align*}
+the probability of seeing $\ket{0}$ is $\frac{1 + \cos(2\pi\theta)}{2}$ and the probability of $\ket{1}$ is $\frac{1 - \cos(2\pi\theta)}{2}$ so there's a bias that depends on $\theta$. We can estimate the bias $\cos(2\pi\theta)$ by repeating the circuit many times. By Chernoff/Hofting bound (which is tight), to estimate the bias of a coin to within $\e$ with probability at least $1-\delta$, we require $\frac{\log(\frac{1}{\delta})}{\e^2}$ samples. Suppose then we want to estimate $\theta$ within $m$ bits of accuracy, i.e. $\e \sim \pm 2^{-m}$. This presents a problem because for this level of accuracy we require $\exp(m)$ number of samples. So, this strategy works well if we want a course estimate of the phase, but not for high precision.
+
+\subsection{Better Phase Estimation}
+In fact with $m$ ancillas we can output $\theta$ to within $m$ bits of accuracy. Let $M = 2^m$ and let $\lambda = e^{2\pi i\theta}$ and $\theta = \frac{j}{2^m}$ (note - this is a simplification! But note this all goes through even if $\theta$ is approximately a power of 2). Now consider the circuit with $m$ ancilla bits:
+
+\begin{center}
+    \includegraphics[scale=0.5]{Images/RichQPE.png}
+\end{center}
+
+The action of this circuit is:
+\begin{align*}
+    \ket{0^m}\ket{\psi} &\stackrel{H^{\otimes m}}{\to} \left(\frac{1}{2^{m/2}}\sum_{k=0}^{M-1}\ket{k}\right)\ket{\psi}
+    \\ &\stackrel{C_k(U)}{\to} \left(\frac{1}{2^{m/2}}\sum_{k=0}^{M-1}\lambda^k\ket{k}\right)\ket{\psi} = \left(\frac{1}{2^{m/2}}\sum_{k=0}^{M-1}\omega_M^{jk}\ket{k}\right)\ket{\psi}
+    \\ &\stackrel{QFT_M^{-1}}{\to} \ket{j}\ket{\psi}
+\end{align*}
+Now, by measuring the ancillas in the computational basis, in a single shot we get $j$! The caveat - because we apply a $k$-controlled unitary, if we want exponential precision in the phase, we require the capacity to implement exponential powers of the unitary $U$. Unless we have access to this, the cost of this algorithm does not outperform the poor man's version.
+
+A relevant application of phase estimation - if we have a Hamiltonian $H$, and want the ground state energy $E_0$ given the ground state $\ket{\psi_0}$, we can use phase estimation on $U = e^{-iHt}$. The difficulty is we require $\ket{\psi_0}$, or an approximation to it - most of the time we use a physically motivated ansatz.
+
+\subsection{Shor's Algorithm for Integer Factorization}
+Seeing Shor as a case of phase estimation is very cool, but nontrivial. We show that factoring reduces to order finding which reduces to phase estimation. To build up to this, we require some basic number theory.
+
+The claim: Factoring is as easy as finding the non-trivial square roots of 1 mod N.
+
+\begin{defbox}{: Non-trivial square root problem}
+    Given odd natural $N$ which is not prime, find $x = \pm 1 \pmod{N}$ such that $x^2 \cong 1 \pmod{N}$.
+\end{defbox}
+We can solve factoring given the ability to find such an $x$:
+\begin{equation}
+    x^2 \equiv 1 \pmod{N} \implies x^2 - 1 \equiv \pmod{N} \implies (x+1)(x-1) \equiv 0 \pmod{N}
+\end{equation}
+by assumption, both $x+1, x-1$ are non-zero mod $N$, which means that $N$ must share a nontrivial factor with $x+1, x-1$. So, we can use Euclid's algorithm to find gcd($x+1, N)$ or gcd($x-1, N)$, and call it $c$- this is a factor of $N$!
+
+Example: Let $N = 15$. We want the non-trivial square root of $1\pmod{15}$. It is $x=4$ because $4^2 \cong 1\pmod{15}$ and $4 \neq \pm 1 \pmod{15}$. Both gcd$(4-1, 15)=3$ and gcd$(4+1, 15) = 5$ are nontrivial factors of 15.
+
+Next, we claim that finding non-trivial square roots is as easy as order finding.
+
+\begin{defbox}{: Order finding}
+    Given $a, N$ relatively prime, find least $1 \leq r \leq N$ such that $a^r \cong 1 \pmod{N}$.
+\end{defbox}
+How do we reduce this to the non-trivial square root problem? The answer is to pick a random $a \in \ZZ_N$ and find its order $r$. Suppose we are lucky and $r$ is even. Then, set $x \cong a^{r/2} \pmod{N}$ - in this case $x^2 \cong a^r\pmod{N} = 1 \pmod{N}$, by the definition of order. What happens if we get it wrong and $r$ is odd? We just throw it away and do it again (there is a sufficiently large probability (over 1/2) we get it right). Of course we also want $x \neq \pm 1 \pmod{1}$, and again there is a high enough probability (over 1/2) that this is true.
+
+These reductions were in the literature for a very long time. The interesting part/insight is that order finding reduces to phase estimation. Suppose we can do phase estimation - now suppose given $a$ we want to find the order $r \pmod{N}$. We have to construct a unitary $U$ corresponding to this problem. We consider the unitary $M_a: \ket{x} \to \ket{xa\mod N}$. Notice the eigenvectors are:
+\begin{equation}
+    \ket{\psi_k} = \frac{1}{\sqrt{r}}\left(\ket{1} + \omega_r^{-k}\ket{a} + \ldots + \omega^{-k(r-1)}\ket{a^{r-1}}\right)
+\end{equation}
+we can see this because:
+\begin{equation}
+    M_a\ket{\psi_k} = \frac{1}{\sqrt{r}}\left(\ket{a} + \omega_r^{-k}\ket{a^2} + \ldots + \omega_r^{-k(r-1)}\ket{a^{r}}\right) = \omega_r^k\frac{1}{\sqrt{r}}(\ket{1} + \omega_r^{-k}\ket{a} + \ldots + \omega_r^{-k(r-1)}\ket{a^{r-1}}) = \omega_r^k\ket{\psi_k}
+\end{equation}
+
+The upshot is the eigenvalue/phase encodes $r$, so phase estimation will tell us the order! We can implement powers of $M_a$ efficiently - this is just modular exponentiation/repeated squaring. The only step remaining thus is how to obtain $\ket{\psi_k}$ - how do we prepare this without knowing what $r$ is ahead of time?

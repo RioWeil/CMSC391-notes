@@ -1,0 +1,36 @@
+\section{Partial Measurement and Interference}
+
+\subsection{Partial Measurement}
+Let us consider quantum measurement again. Suppose we now have a bipartite system with composite Hilbert space $\H_A \otimes \H_B$. What happens if we only measure one subsystem? Supposing we have the bipartite state:
+\begin{equation}
+    \ket{\psi} = \sum_{ij}c_{ij}\ket{i}_A\ket{j}_B = \sum_j(\sum_i c_{ij}\ket{i}_A)\otimes \ket{j}_B
+\end{equation}
+if we measure system $B$ in the standard basis, we obtain $\ket{j}_B$ with probability $\sum_i \abs{c_{ij}}^2$, with the combined system collapsing to the state $(\sum_i c_{ij}\ket{i}_A) \otimes \ket{j}_B$ (up to normalization).
+
+As an example, suppose we have $f: \set{0, 1}^n \to \set{0, 1}$ a Boolean function. Consider now the bipartite state $\frac{1}{\sqrt{2^n}}\sum_x \ket{x}_A\ket{f(x)}_B$. 
+
+If we measure register $A$ (in the computational basis), we just have a uniform probability of measuring any bitstring $\ket{x}$, and then register $B$ is left in the state $\ket{f(x)}$ for the measured $x$.
+
+If we instead measure register $B$ (in the computational basis), we obtain outcome $\ket{0}$ with probability proportional to the number of inputs $x$ such that $f(x) = 0$ and the same for outcoem $\ket{1}$, i.e. $\ket{0}$ occurs with probbaility $\sum_{x \in f^{-1}(0)}\left(\frac{1}{\sqrt{2^n}}\right)^2 = \frac{\abs{f^{-1}}(0)}{2^n}$ and $\ket{1}$ with $\frac{\abs{f^{-1}}(0)}{2^n}$. For outcome $b \in \set{0, 1}$ we have the post-measurement state:
+\begin{equation}
+    \frac{1}{\sqrt{f^{-1}}(b)}\sum_{x \in f^{-1}(b)}\ket{x}\ket{b}
+\end{equation}
+
+\subsection{Interference}
+Quantum computers seem to be dramatically faster than their classical counterparts at certain tasks, but where does this power come from? The best answer appears to be a phenomenon known as quantum interference. 
+
+Consider the one-qubit state $\ket{\psi} = \ket{0}$ and let $U = \frac{1}{\sqrt{2}}\m{1 & -1 \\ 1 & 1}$. If we apply $U$ to $\ket{\psi}$, we have:
+\begin{equation}
+    U\ket{\psi} = \frac{1}{\sqrt{2}}\ket{0} + \frac{1}{\sqrt{2}}\ket{1}.
+\end{equation}
+If we apply $U$ again, we have:
+\begin{equation}
+    U\left(\frac{1}{\sqrt{2}}\ket{0} + \frac{1}{\sqrt{2}}\ket{1}\right) = \frac{1}{2}\ket{0} + \frac{1}{2}\ket{1} - \frac{1}{2}\ket{0} + \frac{1}{2}\ket{1} = \ket{1}
+\end{equation}
+so the $\ket{0}$ states cancel out! The outcome of a measurement in the computational basis would now be deterministic. This is one example of destructive interference.
+
+The above example is simple, but tells us that the negative amplitudes are important! In a loose sense, different quantum computational paths cancel due to these relative phases. this is in contrast to classical computation, where randomized pathways always add - randomized algorithms are just deterministic algorithms with random seeds, i.e. a deterministic algorithm $B$ with output probability:
+\begin{equation}
+    \text{Pr}_{r \in \set{0, 1}^q}[B(x, r) = 1] = \sum_{r: B(x, r) = 1}\text{Pr}[r].
+\end{equation}
+This is a sum of all positive terms. Note that there is no way to generically express the output probability of a quantum algorithm in this form (we will return to this later!)
